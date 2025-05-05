@@ -1,41 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Show My IP</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      margin-top: 100px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #ip {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>IP Viewer</title>
 </head>
 <body>
-  <h1>Show My IP Address</h1>
-  <button onclick="getIP()">Show me my IP address</button>
-  <div id="ip"></div>
+  <h1>Your IP Information</h1>
+  <p><strong>IP Address:</strong> <span id="ip"></span></p>
+  <p><strong>City:</strong> <span id="city"></span></p>
+  <p><strong>Region:</strong> <span id="region"></span></p>
+  <p><strong>Country:</strong> <span id="country"></span></p>
+  <p><strong>ISP:</strong> <span id="org"></span></p>
 
   <script>
-    function getIP() {
-      fetch('https://api.ipify.org?format=json')
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('ip').textContent = "Your IP address is: " + data.ip;
-        })
-        .catch(error => {
-          document.getElementById('ip').textContent = "Could not retrieve IP address.";
-          console.error('Error fetching IP:', error);
-        });
-    }
+    fetch('https://ipapi.co/json/')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('ip').textContent = data.ip;
+        document.getElementById('city').textContent = data.city;
+        document.getElementById('region').textContent = data.region;
+        document.getElementById('country').textContent = data.country_name;
+        document.getElementById('org').textContent = data.org;
+      })
+      .catch(error => {
+        console.error('Error fetching IP info:', error);
+      });
   </script>
 </body>
 </html>
