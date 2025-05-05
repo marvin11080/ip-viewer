@@ -2,28 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>IP Viewer</title>
+  <title>IP and Browser Info Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 30px;
       text-align: center;
     }
-    #info {
-      margin-top: 20px;
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    #info, #browser-info {
+      margin-top: 30px;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 90%;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    th {
+      background-color: #f5f5f5;
+    }
+    td:first-child {
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>IP Viewer</h1>
-  <button onclick="getIPInfo()">My IP Info</button>
+  <h1>Viewer</h1>
 
+  <button onclick="getIPInfo()">My IP Info</button>
+  <button onclick="getBrowserInfo()">My Browser Info</button>
+
+  <!-- IP Info Display -->
   <div id="info" style="display: none;">
+    <h2>IP Information</h2>
     <p><strong>IP Address:</strong> <span id="ip"></span></p>
     <p><strong>City:</strong> <span id="city"></span></p>
     <p><strong>Region:</strong> <span id="region"></span></p>
     <p><strong>Country:</strong> <span id="country"></span></p>
     <p><strong>ISP:</strong> <span id="org"></span></p>
+  </div>
+
+  <!-- Browser Info Table -->
+  <div id="browser-info" style="display: none;">
+    <h2>Browser Information</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody id="browser-table-body"></tbody>
+    </table>
   </div>
 
   <script>
@@ -42,6 +81,43 @@
           alert("Failed to fetch IP info.");
           console.error(error);
         });
+    }
+
+    function getBrowserInfo() {
+      const data = {
+        'App Name': [navigator.appName, 'Browser name (usually "Netscape")'],
+        'App Version': [navigator.appVersion, 'Version info and platform'],
+        'User Agent': [navigator.userAgent, 'Full browser identifier string'],
+        'Platform': [navigator.platform, 'Operating system platform'],
+        'Language': [navigator.language, 'Preferred language'],
+        'Languages': [navigator.languages.join(', '), 'List of accepted languages'],
+        'Cookie Enabled': [navigator.cookieEnabled, 'Are cookies enabled'],
+        'Java Enabled': [navigator.javaEnabled(), 'Is Java enabled'],
+        'Online': [navigator.onLine, 'Is the browser currently online'],
+        'Hardware Concurrency': [navigator.hardwareConcurrency, 'Number of logical CPU cores'],
+        'Device Memory': [navigator.deviceMemory + ' GB', 'Approximate RAM size'],
+        'Screen Width': [screen.width, 'Device screen width (px)'],
+        'Screen Height': [screen.height, 'Device screen height (px)'],
+        'Color Depth': [screen.colorDepth, 'Color depth of the screen (bits)'],
+        'Pixel Ratio': [window.devicePixelRatio, 'Pixel density ratio'],
+        'Timezone': [Intl.DateTimeFormat().resolvedOptions().timeZone, 'Local time zone'],
+        'Touch Support': ['ontouchstart' in window || navigator.maxTouchPoints > 0, 'Touch input supported?']
+      };
+
+      const tbody = document.getElementById('browser-table-body');
+      tbody.innerHTML = ''; // Clear existing rows
+
+      for (const [key, [value, desc]] of Object.entries(data)) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${key}</td>
+          <td>${value}</td>
+          <td>${desc}</td>
+        `;
+        tbody.appendChild(row);
+      }
+
+      document.getElementById('browser-info').style.display = 'block';
     }
   </script>
 </body>
