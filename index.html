@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Show My IP</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #ip {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Show My IP Address</h1>
+  <button onclick="getIP()">Show me my IP address</button>
+  <div id="ip"></div>
+
+  <script>
+    function getIP() {
+      fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('ip').textContent = "Your IP address is: " + data.ip;
+        })
+        .catch(error => {
+          document.getElementById('ip').textContent = "Could not retrieve IP address.";
+          console.error('Error fetching IP:', error);
+        });
+    }
+  </script>
+</body>
+</html>
