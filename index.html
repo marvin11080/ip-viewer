@@ -2,67 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>IP and Browser Info Viewer</title>
+  <title>Full IP Info Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 30px;
-      text-align: center;
-    }
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-    #info, #browser-info {
-      margin-top: 30px;
-    }
-    table {
-      margin: 0 auto;
-      border-collapse: collapse;
-      width: 90%;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-    }
-    th {
+      padding: 2rem;
       background-color: #f5f5f5;
     }
-    td:first-child {
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    #info {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: none;
+      max-width: 800px;
+      margin: auto;
+    }
+    .field {
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eee;
+    }
+    .label {
       font-weight: bold;
+      display: inline-block;
+      width: 220px;
+    }
+    button {
+      display: block;
+      margin: 0 auto 2rem auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #005fa3;
     }
   </style>
 </head>
 <body>
-  <h1>Viewer</h1>
 
-  <button onclick="getIPInfo()">IP Info</button>
-  <button onclick="getBrowserInfo()">Browser Info</button>
+  <h1>IP Information Viewer</h1>
+  <button onclick="getIPInfo()">Get My IP Info</button>
 
-  <!-- IP Info Display -->
-  <div id="info" style="display: none;">
-    <h2>IP Information</h2>
-    <p><strong>IP Address:</strong> <span id="ip"></span></p>
-    <p><strong>City:</strong> <span id="city"></span></p>
-    <p><strong>Region:</strong> <span id="region"></span></p>
-    <p><strong>Country:</strong> <span id="country"></span></p>
-    <p><strong>ISP:</strong> <span id="org"></span></p>
-  </div>
-
-  <!-- Browser Info Table -->
-  <div id="browser-info" style="display: none;">
-    <h2>Browser Information</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Value</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody id="browser-table-body"></tbody>
-    </table>
+  <div id="info">
+    <!-- IP info fields will be inserted here dynamically -->
   </div>
 
   <script>
@@ -70,55 +62,36 @@
       fetch('https://ipapi.co/json/')
         .then(response => response.json())
         .then(data => {
-          document.getElementById('ip').textContent = data.ip;
-          document.getElementById('city').textContent = data.city;
-          document.getElementById('region').textContent = data.region;
-          document.getElementById('country').textContent = data.country_name;
-          document.getElementById('org').textContent = data.org;
-          document.getElementById('info').style.display = 'block';
+          const fields = [
+            'ip', 'city', 'region', 'region_code', 'country', 'country_code',
+            'country_code_iso3', 'country_name', 'country_capital', 'country_tld',
+            'country_area', 'country_population', 'continent_code', 'in_eu',
+            'postal', 'latitude', 'longitude', 'latlong', 'timezone', 'utc_offset',
+            'country_calling_code', 'currency', 'currency_name', 'languages',
+            'asn', 'org', 'hostname'
+          ];
+
+          const infoDiv = document.getElementById('info');
+          infoDiv.innerHTML = ''; // Clear previous results
+
+          fields.forEach(field => {
+            const value = data[field];
+            if (value !== undefined) {
+              const fieldDiv = document.createElement('div');
+              fieldDiv.className = 'field';
+              fieldDiv.innerHTML = `<span class="label">${field.replace(/_/g, ' ')}:</span> <span>${value}</span>`;
+              infoDiv.appendChild(fieldDiv);
+            }
+          });
+
+          infoDiv.style.display = 'block';
         })
         .catch(error => {
           alert("Failed to fetch IP info.");
           console.error(error);
         });
     }
-
-    function getBrowserInfo() {
-      const data = {
-        'App Name': [navigator.appName, 'Browser name (usually "Netscape")'],
-        'App Version': [navigator.appVersion, 'Version info and platform'],
-        'User Agent': [navigator.userAgent, 'Full browser identifier string'],
-        'Platform': [navigator.platform, 'Operating system platform'],
-        'Language': [navigator.language, 'Preferred language'],
-        'Languages': [navigator.languages.join(', '), 'List of accepted languages'],
-        'Cookie Enabled': [navigator.cookieEnabled, 'Are cookies enabled'],
-        'Java Enabled': [navigator.javaEnabled(), 'Is Java enabled'],
-        'Online': [navigator.onLine, 'Is the browser currently online'],
-        'Hardware Concurrency': [navigator.hardwareConcurrency, 'Number of logical CPU cores'],
-        'Device Memory': [navigator.deviceMemory + ' GB', 'Approximate RAM size'],
-        'Screen Width': [screen.width, 'Device screen width (px)'],
-        'Screen Height': [screen.height, 'Device screen height (px)'],
-        'Color Depth': [screen.colorDepth, 'Color depth of the screen (bits)'],
-        'Pixel Ratio': [window.devicePixelRatio, 'Pixel density ratio'],
-        'Timezone': [Intl.DateTimeFormat().resolvedOptions().timeZone, 'Local time zone'],
-        'Touch Support': ['ontouchstart' in window || navigator.maxTouchPoints > 0, 'Touch input supported?']
-      };
-
-      const tbody = document.getElementById('browser-table-body');
-      tbody.innerHTML = ''; // Clear existing rows
-
-      for (const [key, [value, desc]] of Object.entries(data)) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${key}</td>
-          <td>${value}</td>
-          <td>${desc}</td>
-        `;
-        tbody.appendChild(row);
-      }
-
-      document.getElementById('browser-info').style.display = 'block';
-    }
   </script>
+
 </body>
 </html>
