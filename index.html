@@ -17,7 +17,7 @@
       max-width: 900px;
       margin: auto;
     }
-    #info, #deviceInfo {
+    #info, #deviceInfo, #quoteBox, #numberBox {
       background: white;
       padding: 1.5rem;
       border-radius: 8px;
@@ -49,6 +49,11 @@
     button:hover {
       background: #005fa3;
     }
+    .quote, .number-fact {
+      font-style: italic;
+      font-size: 1.2rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -57,14 +62,20 @@
   <div class="container">
     <button id="toggleIpBtn" onclick="toggleIPInfo()">Show My IP Info</button>
     <button id="toggleDeviceBtn" onclick="toggleDeviceInfo()">Show My Browser & Device Info</button>
+    <button id="toggleQuoteBtn" onclick="toggleQuote()">Show Quote of the Moment</button>
+    <button id="toggleNumberBtn" onclick="toggleNumber()">Show a Random Number Fact</button>
 
     <div id="info"></div>
     <div id="deviceInfo"></div>
+    <div id="quoteBox" class="quote"></div>
+    <div id="numberBox" class="number-fact"></div>
   </div>
 
   <script>
     let ipInfoVisible = false;
     let deviceInfoVisible = false;
+    let quoteVisible = false;
+    let numberVisible = false;
     let cachedIPData = null;
 
     function toggleIPInfo() {
@@ -159,6 +170,54 @@
         fieldDiv.className = 'field';
         fieldDiv.innerHTML = `<span class="label">${key}:</span> <span>${data[key]}</span>`;
         deviceDiv.appendChild(fieldDiv);
+      }
+    }
+
+    function toggleQuote() {
+      const box = document.getElementById('quoteBox');
+      const btn = document.getElementById('toggleQuoteBtn');
+
+      if (quoteVisible) {
+        box.style.display = 'none';
+        btn.textContent = 'Show Quote of the Moment';
+        quoteVisible = false;
+      } else {
+        fetch('https://api.quotable.io/random')
+          .then(res => res.json())
+          .then(data => {
+            box.innerHTML = `"${data.content}" — <strong>${data.author}</strong>`;
+            box.style.display = 'block';
+            btn.textContent = 'Hide Quote of the Moment';
+            quoteVisible = true;
+          })
+          .catch(err => {
+            box.innerHTML = 'Could not load quote.';
+            box.style.display = 'block';
+          });
+      }
+    }
+
+    function toggleNumber() {
+      const box = document.getElementById('numberBox');
+      const btn = document.getElementById('toggleNumberBtn');
+
+      if (numberVisible) {
+        box.style.display = 'none';
+        btn.textContent = 'Show a Random Number Fact';
+        numberVisible = false;
+      } else {
+        fetch('http://numbersapi.com/random/trivia')
+          .then(res => res.text())
+          .then(text => {
+            box.innerHTML = text;
+            box.style.display = 'block';
+            btn.textContent = 'Hide Random Number Fact';
+            numberVisible = true;
+          })
+          .catch(err => {
+            box.innerHTML = 'Could not load number fact.';
+            box.style.display = 'block';
+          });
       }
     }
   </script>
