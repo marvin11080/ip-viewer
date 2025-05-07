@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Full IP Info Viewer</title>
+  <title>IP and Device Info Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,16 +11,19 @@
     }
     h1 {
       text-align: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
-    #info {
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    #info, #deviceInfo {
       background: white;
       padding: 1.5rem;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-top: 1.5rem;
       display: none;
-      max-width: 800px;
-      margin: auto;
     }
     .field {
       margin-bottom: 10px;
@@ -34,7 +37,7 @@
     }
     button {
       display: block;
-      margin: 0 auto 2rem auto;
+      margin: 0.5rem auto;
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
@@ -50,46 +53,113 @@
 </head>
 <body>
 
-  <h1>IP Information Viewer</h1>
-  <button onclick="getIPInfo()">Get My IP Info</button>
+  <h1>IP and Device Info Viewer</h1>
+  <div class="container">
+    <button id="toggleIpBtn" onclick="toggleIPInfo()">Show My IP Info</button>
+    <button id="toggleDeviceBtn" onclick="toggleDeviceInfo()">Show My Browser & Device Info</button>
 
-  <div id="info">
-    <!-- IP info fields will be inserted here dynamically -->
+    <div id="info"></div>
+    <div id="deviceInfo"></div>
   </div>
 
   <script>
-    function getIPInfo() {
-      fetch('https://ipapi.co/json/')
-        .then(response => response.json())
-        .then(data => {
-          const fields = [
-            'ip', 'city', 'region', 'region_code', 'country', 'country_code',
-            'country_code_iso3', 'country_name', 'country_capital', 'country_tld',
-            'country_area', 'country_population', 'continent_code', 'in_eu',
-            'postal', 'latitude', 'longitude', 'latlong', 'timezone', 'utc_offset',
-            'country_calling_code', 'currency', 'currency_name', 'languages',
-            'asn', 'org', 'hostname'
-          ];
+    let ipInfoVisible = false;
+    let deviceInfoVisible = false;
+    let cachedIPData = null;
 
-          const infoDiv = document.getElementById('info');
-          infoDiv.innerHTML = ''; // Clear previous results
+    function toggleIPInfo() {
+      const infoDiv = document.getElementById('info');
+      const btn = document.getElementById('toggleIpBtn');
 
-          fields.forEach(field => {
-            const value = data[field];
-            if (value !== undefined) {
-              const fieldDiv = document.createElement('div');
-              fieldDiv.className = 'field';
-              fieldDiv.innerHTML = `<span class="label">${field.replace(/_/g, ' ')}:</span> <span>${value}</span>`;
-              infoDiv.appendChild(fieldDiv);
-            }
-          });
+      if (ipInfoVisible) {
+        infoDiv.style.display = 'none';
+        btn.textContent = 'Show My IP Info';
+        ipInfoVisible = false;
+      } else {
+        if (cachedIPData) {
+          renderIPInfo(cachedIPData);
+        } else {
+          fetch('https://ipapi.co/json/')
+            .then(response => response.json())
+            .then(data => {
+              cachedIPData = data;
+              renderIPInfo(data);
+            })
+            .catch(error => {
+              alert("Failed to fetch IP info.");
+              console.error(error);
+            });
+        }
+        infoDiv.style.display = 'block';
+        btn.textContent = 'Hide My IP Info';
+        ipInfoVisible = true;
+      }
+    }
 
-          infoDiv.style.display = 'block';
-        })
-        .catch(error => {
-          alert("Failed to fetch IP info.");
-          console.error(error);
-        });
+    function renderIPInfo(data) {
+      const fields = [
+        'ip', 'city', 'region', 'region_code', 'country', 'country_code',
+        'country_code_iso3', 'country_name', 'country_capital', 'country_tld',
+        'country_area', 'country_population', 'continent_code', 'in_eu',
+        'postal', 'latitude', 'longitude', 'latlong', 'timezone', 'utc_offset',
+        'country_calling_code', 'currency', 'currency_name', 'languages',
+        'asn', 'org', 'hostname'
+      ];
+
+      const infoDiv = document.getElementById('info');
+      infoDiv.innerHTML = '';
+
+      fields.forEach(field => {
+        const value = data[field];
+        if (value !== undefined) {
+          const fieldDiv = document.createElement('div');
+          fieldDiv.className = 'field';
+          fieldDiv.innerHTML = `<span class="label">${field.replace(/_/g, ' ')}:</span> <span>${value}</span>`;
+          infoDiv.appendChild(fieldDiv);
+        }
+      });
+    }
+
+    function toggleDeviceInfo() {
+      const deviceDiv = document.getElementById('deviceInfo');
+      const btn = document.getElementById('toggleDeviceBtn');
+
+      if (deviceInfoVisible) {
+        deviceDiv.style.display = 'none';
+        btn.textContent = 'Show My Browser & Device Info';
+        deviceInfoVisible = false;
+      } else {
+        renderDeviceInfo();
+        deviceDiv.style.display = 'block';
+        btn.textContent = 'Hide My Browser & Device Info';
+        deviceInfoVisible = true;
+      }
+    }
+
+    function renderDeviceInfo() {
+      const deviceDiv = document.getElementById('deviceInfo');
+      deviceDiv.innerHTML = '';
+
+      const data = {
+        'User Agent': navigator.userAgent,
+        'Platform': navigator.platform,
+        'Language': navigator.language,
+        'Languages': navigator.languages.join(', '),
+        'Cookies Enabled': navigator.cookieEnabled,
+        'Online': navigator.onLine,
+        'Screen Resolution': `${screen.width}x${screen.height}`,
+        'Window Size': `${window.innerWidth}x${window.innerHeight}`,
+        'Color Depth': screen.colorDepth,
+        'Pixel Ratio': window.devicePixelRatio,
+        'Time Zone': Intl.DateTimeFormat().resolvedOptions().timeZone
+      };
+
+      for (const key in data) {
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'field';
+        fieldDiv.innerHTML = `<span class="label">${key}:</span> <span>${data[key]}</span>`;
+        deviceDiv.appendChild(fieldDiv);
+      }
     }
   </script>
 
