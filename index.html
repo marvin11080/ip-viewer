@@ -2,225 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>IP and Device Info Viewer</title>
+  <title>IP & Fun Facts Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 2rem;
-      background-color: #f5f5f5;
+      padding: 20px;
+      background: ##d4f0fc;
+      color: #333;
     }
     h1 {
       text-align: center;
-      margin-bottom: 2rem;
     }
-    .container {
-      max-width: 900px;
-      margin: auto;
-    }
-    #info, #deviceInfo, #quoteBox, #numberBox {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-top: 1.5rem;
-      display: none;
-    }
-    .field {
-      margin-bottom: 10px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid #eee;
-    }
-    .label {
-      font-weight: bold;
+    .btn {
       display: inline-block;
-      width: 220px;
-    }
-    button {
-      display: block;
-      margin: 0.5rem auto;
+      margin: 10px;
       padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background: #007acc;
+      background: #3498db;
       color: white;
       border: none;
+      cursor: pointer;
       border-radius: 5px;
     }
-    button:hover {
-      background: #005fa3;
+    .btn:hover {
+      background: #2980b9;
     }
-    .quote, .number-fact {
-      font-style: italic;
-      font-size: 1.2rem;
-      text-align: center;
+    .info-box {
+      background: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      display: none;
+    }
+    pre {
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
+  <h1>IP and Fun Facts Viewer</h1>
 
-  <h1>IP and Device Info Viewer</h1>
-  <div class="container">
-    <button id="toggleIpBtn" onclick="toggleIPInfo()">Show My IP Info</button>
-    <button id="toggleDeviceBtn" onclick="toggleDeviceInfo()">Show My Browser & Device Info</button>
-    <button id="toggleQuoteBtn" onclick="toggleQuote()">Show Quote of the Moment</button>
-    <button id="toggleNumberBtn" onclick="toggleNumber()">Show a Random Number Fact</button>
+  <button class="btn" onclick="toggleIP()">Show/Hide IP Info</button>
+  <button class="btn" onclick="showQuote()">Get a Random Quote</button>
+  <button class="btn" onclick="showActivity()">Get a Random Fun Activity</button>
 
-    <div id="info"></div>
-    <div id="deviceInfo"></div>
-    <div id="quoteBox" class="quote"></div>
-    <div id="numberBox" class="number-fact"></div>
-  </div>
+  <div class="info-box" id="ipBox"></div>
+  <div class="info-box" id="quoteBox"></div>
+  <div class="info-box" id="activityBox"></div>
 
   <script>
-    let ipInfoVisible = false;
-    let deviceInfoVisible = false;
-    let quoteVisible = false;
-    let numberVisible = false;
-    let cachedIPData = null;
+    let ipVisible = false;
 
-    function toggleIPInfo() {
-      const infoDiv = document.getElementById('info');
-      const btn = document.getElementById('toggleIpBtn');
-
-      if (ipInfoVisible) {
-        infoDiv.style.display = 'none';
-        btn.textContent = 'Show My IP Info';
-        ipInfoVisible = false;
-      } else {
-        if (cachedIPData) {
-          renderIPInfo(cachedIPData);
-        } else {
-          fetch('https://ipapi.co/json/')
-            .then(response => response.json())
-            .then(data => {
-              cachedIPData = data;
-              renderIPInfo(data);
-            })
-            .catch(error => {
-              alert("Failed to fetch IP info.");
-              console.error(error);
-            });
-        }
-        infoDiv.style.display = 'block';
-        btn.textContent = 'Hide My IP Info';
-        ipInfoVisible = true;
-      }
-    }
-
-    function renderIPInfo(data) {
-      const fields = [
-        'ip', 'city', 'region', 'region_code', 'country', 'country_code',
-        'country_code_iso3', 'country_name', 'country_capital', 'country_tld',
-        'country_area', 'country_population', 'continent_code', 'in_eu',
-        'postal', 'latitude', 'longitude', 'latlong', 'timezone', 'utc_offset',
-        'country_calling_code', 'currency', 'currency_name', 'languages',
-        'asn', 'org', 'hostname'
-      ];
-
-      const infoDiv = document.getElementById('info');
-      infoDiv.innerHTML = '';
-
-      fields.forEach(field => {
-        const value = data[field];
-        if (value !== undefined) {
-          const fieldDiv = document.createElement('div');
-          fieldDiv.className = 'field';
-          fieldDiv.innerHTML = `<span class="label">${field.replace(/_/g, ' ')}:</span> <span>${value}</span>`;
-          infoDiv.appendChild(fieldDiv);
-        }
-      });
-    }
-
-    function toggleDeviceInfo() {
-      const deviceDiv = document.getElementById('deviceInfo');
-      const btn = document.getElementById('toggleDeviceBtn');
-
-      if (deviceInfoVisible) {
-        deviceDiv.style.display = 'none';
-        btn.textContent = 'Show My Browser & Device Info';
-        deviceInfoVisible = false;
-      } else {
-        renderDeviceInfo();
-        deviceDiv.style.display = 'block';
-        btn.textContent = 'Hide My Browser & Device Info';
-        deviceInfoVisible = true;
-      }
-    }
-
-    function renderDeviceInfo() {
-      const deviceDiv = document.getElementById('deviceInfo');
-      deviceDiv.innerHTML = '';
-
-      const data = {
-        'User Agent': navigator.userAgent,
-        'Platform': navigator.platform,
-        'Language': navigator.language,
-        'Languages': navigator.languages.join(', '),
-        'Cookies Enabled': navigator.cookieEnabled,
-        'Online': navigator.onLine,
-        'Screen Resolution': `${screen.width}x${screen.height}`,
-        'Window Size': `${window.innerWidth}x${window.innerHeight}`,
-        'Color Depth': screen.colorDepth,
-        'Pixel Ratio': window.devicePixelRatio,
-        'Time Zone': Intl.DateTimeFormat().resolvedOptions().timeZone
-      };
-
-      for (const key in data) {
-        const fieldDiv = document.createElement('div');
-        fieldDiv.className = 'field';
-        fieldDiv.innerHTML = `<span class="label">${key}:</span> <span>${data[key]}</span>`;
-        deviceDiv.appendChild(fieldDiv);
-      }
-    }
-
-    function toggleQuote() {
-      const box = document.getElementById('quoteBox');
-      const btn = document.getElementById('toggleQuoteBtn');
-
-      if (quoteVisible) {
+    function toggleIP() {
+      const box = document.getElementById('ipBox');
+      if (ipVisible) {
         box.style.display = 'none';
-        btn.textContent = 'Show Quote of the Moment';
-        quoteVisible = false;
-      } else {
-        fetch('https://api.quotable.io/random')
-          .then(res => res.json())
-          .then(data => {
-            box.innerHTML = `"${data.content}" — <strong>${data.author}</strong>`;
-            box.style.display = 'block';
-            btn.textContent = 'Hide Quote of the Moment';
-            quoteVisible = true;
-          })
-          .catch(err => {
-            box.innerHTML = 'Could not load quote.';
-            box.style.display = 'block';
-          });
+        ipVisible = false;
+        return;
       }
+      fetch('https://ipapi.co/json/')
+        .then(res => res.json())
+        .then(data => {
+          let output = '';
+          for (let key in data) {
+            output += `${key}: ${data[key]}\n`;
+          }
+          box.innerHTML = `<pre>${output}</pre>`;
+          box.style.display = 'block';
+          ipVisible = true;
+        })
+        .catch(err => {
+          box.innerHTML = 'Failed to load IP info.';
+          box.style.display = 'block';
+        });
     }
 
-    function toggleNumber() {
-      const box = document.getElementById('numberBox');
-      const btn = document.getElementById('toggleNumberBtn');
+    function showQuote() {
+      fetch('https://api.quotable.io/random')
+        .then(res => res.json())
+        .then(data => {
+          const box = document.getElementById('quoteBox');
+          box.innerHTML = `"${data.content}" — <strong>${data.author}</strong>`;
+          box.style.display = 'block';
+        })
+        .catch(() => {
+          document.getElementById('quoteBox').innerHTML = 'Could not load quote.';
+        });
+    }
 
-      if (numberVisible) {
-        box.style.display = 'none';
-        btn.textContent = 'Show a Random Number Fact';
-        numberVisible = false;
-      } else {
-        fetch('http://numbersapi.com/random/trivia')
-          .then(res => res.text())
-          .then(text => {
-            box.innerHTML = text;
-            box.style.display = 'block';
-            btn.textContent = 'Hide Random Number Fact';
-            numberVisible = true;
-          })
-          .catch(err => {
-            box.innerHTML = 'Could not load number fact.';
-            box.style.display = 'block';
-          });
-      }
+    function showActivity() {
+      fetch('https://www.boredapi.com/api/activity')
+        .then(res => res.json())
+        .then(data => {
+          const box = document.getElementById('activityBox');
+          box.innerHTML = `Try this: <strong>${data.activity}</strong>`;
+          box.style.display = 'block';
+        })
+        .catch(() => {
+          document.getElementById('activityBox').innerHTML = 'Could not load activity.';
+        });
     }
   </script>
-
 </body>
 </html>
